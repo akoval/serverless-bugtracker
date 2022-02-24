@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  serverless-bugtracker
+
+  My bug tracker.Uses Amazon serverless stack
+  
+Globals:
+  Function:
+    Timeout: 3
+
+Resources:
+  GetProjectByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/get-project-by-id
+      Handler: app.lambdaHandler
+      Runtime: nodejs14.x
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            Path: /hello
+            Method: get
+
+Outputs:
+  GetProjectByIdFunctionApi:
+    Description: "API Gateway endpoint URL for Prod stage for GetProjectByIdFunction"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+  GetProjectByIdFunction:
+    Description: "GetProjectByIdFunction Lambda Function ARN"
+    Value: !GetAtt GetProjectByIdFunction.Arn
+  GetProjectByIdFunctionIamRole:
+    Description: "Implicit IAM Role created for GetProjectByIdFunction function"
+    Value: !GetAtt GetProjectByIdFunctionRole.Arn

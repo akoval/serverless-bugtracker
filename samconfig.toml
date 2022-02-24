@@ -1,0 +1,10 @@
+version = 0.1
+[chapter1]
+[chapter1.deploy]
+[chapter1.deploy.parameters]
+stack_name = "serverless-bugtracker-ch1"
+s3_bucket = "serverless-bugtracker-sam"
+s3_prefix = "serverless-bugtracker-ch1"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
