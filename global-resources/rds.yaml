@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "AWS CloudFormation for creating an Amazon RDS DB instance"
+Parameters:
+  RootStackName:
+    Type: String
+    Description: The shared value will be passed to this parameter by parent stack.
+  DBInstanceClass:
+    Default: db.t3.micro
+    Description: DB instance class
+    Type: String
+    ConstraintDescription: Must select a valid DB instance type.
+  DBAllocatedStorage:
+    Default: '10'
+    Description: The size of the database (GiB)
+    Type: Number
+    MinValue: '10'
+    MaxValue: '65536'
+    ConstraintDescription: must be between 20 and 65536 GiB.
+  PrivateSubnet00: 
+    Type: String
+    Description: The shared value will be passed to this parameter by parent stack.
+  PrivateSubnet01: 
+    Type: String
+    Description: The shared value will be passed to this parameter by parent stack.
+  DBSecurityGroup:
+    Type: String
+    Description: The shared value will be passed to this parameter by parent stack.
+Resources:
+  DBSubnetGroup: 
+    Type: AWS::RDS::DBSubnetGroup
+    Properties: 
+      DBSubnetGroupName:
+        !Join
+        - ""
+        - - !Ref RootStackName
+          - '-dbsubnetgn'
+      DBSubnetGroupDescription: Subnet Group for DB
+      SubnetIds:
+        - !Ref PrivateSubnet00
+        - !Ref PrivateSubnet01
+  DB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier:
+        !Join
+        - ""
+        - - !Ref RootStackName
+          - '-db'
+      DBInstanceClass: !Ref DBInstanceClass
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      AllocatedStorage: !Ref DBAllocatedStorage
+      Engine: MySQL
+      MasterUsername: '{{resolve:ssm:/global/serverless-bugtracker/db-login}}'
+      MasterUserPassword: '{{resolve:ssm-secure:/global/serverless-bugtracker/db-password}}'
+      VPCSecurityGroups: 
+        - !Ref DBSecurityGroup

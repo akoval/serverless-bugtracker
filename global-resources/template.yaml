@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Global Resources
+
+  CloudFormation Template for BugTracker App global resources
+
+Globals:
+  Function:
+    Timeout: 3
+
+Parameters:
+  VpcCIDR:
+    Description: Please enter the IP range (CIDR notation) for this VPC
+    Type: String
+    Default: 10.72.0.0/16
+  PublicSubnet00CIDR:
+    Description: Please enter the IP range (CIDR notation) for the public subnet
+    Type: String
+    Default: 10.72.0.0/24
+  PrivateSubnet00CIDR:
+    Description: Please enter the IP range (CIDR notation) for the private subnet00
+    Type: String
+    Default: 10.72.1.0/24
+  PrivateSubnet01CIDR:
+    Description: Please enter the IP range (CIDR notation) for the private subnet01
+    Type: String
+    Default: 10.72.2.0/24
+  DBInstanceClass:
+    Type: String
+    Default: db.t3.small
+  DBAllocatedStorage:
+    Type: Number
+    Default: '10'
+
+Resources:
+  VPC:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: vpc.yaml
+      Parameters:
+        RootStackName: !Ref AWS::StackName
+  RDS:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: rds.yaml
+      Parameters:
+        RootStackName: !Ref AWS::StackName
+        DBInstanceClass: !Ref DBInstanceClass
+        DBAllocatedStorage: !Ref DBAllocatedStorage
+        PrivateSubnet00: !GetAtt VPC.Outputs.PrivateSubnet00
+        PrivateSubnet01: !GetAtt VPC.Outputs.PrivateSubnet01
+        DBSecurityGroup: !GetAtt VPC.Outputs.DBSecurityGroup
+    DependsOn:
+      - VPC 
+
+Outputs:
+  LambdaSubnet:
+    Description: "Export the ID of created Subnet for Lambda Stack"
+    Value:
+      !GetAtt [VPC, Outputs.PrivateSubnet00]
+    Export:
+      Name: !Sub '${AWS::StackName}-LambdaSubnet'
+  LambdaSecurityGroup:
+    Description: "Export the ID of created SecurityGroup for Lambda Stack"
+    Value:
+      !GetAtt [VPC, Outputs.LambdaSecurityGroup]
+    Export:
+      Name: !Sub '${AWS::StackName}-LambdaSecurityGroup'
