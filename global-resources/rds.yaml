@@ -54,3 +54,8 @@ Resources:
       MasterUserPassword: '{{resolve:ssm-secure:/global/serverless-bugtracker/db-password}}'
       VPCSecurityGroups: 
         - !Ref DBSecurityGroup
+
+Outputs:
+  DBHost:
+    Description: database host
+    Value: !Sub "${DB.Endpoint.Address}"

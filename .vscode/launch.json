@@ -3,6 +3,29 @@
         {
             "type": "aws-sam",
             "request": "direct-invoke",
+            "name": "serverless-bugtracker:RemoveTeamMemberFunction",
+            "invokeTarget": {
+                "target": "template",
+                "templatePath": "${workspaceFolder}/template.yaml",
+                "logicalId": "RemoveTeamMemberFunction"
+            },
+            "lambda": {
+                "payload": {
+                    "json": {
+                        "project_id": 1,
+                        "team_member_id": 1
+                    }
+                },
+                "environmentVariables": {
+                    "HOST": "MYDB.us-east-1.rds.amazonaws.com",
+                    "LOGIN": "user",
+                    "DB_NAME": "password"
+                }
+            }
+        },
+        {
+            "type": "aws-sam",
+            "request": "direct-invoke",
             "name": "get-project-by-id:app.lambdaHandler (nodejs14.x)",
             "invokeTarget": {
                 "target": "code",
@@ -11,8 +34,16 @@
             },
             "lambda": {
                 "runtime": "nodejs14.x",
-                "payload": {},
-                "environmentVariables": {}
+                "payload": {
+                    "json": {
+                        "id": 1
+                    }
+                },
+                "environmentVariables": {
+                    "HOST": "MYDB.us-east-1.rds.amazonaws.com",
+                    "LOGIN": "user",
+                    "DB_NAME": "password"
+                }
             }
         },
         {
@@ -42,8 +73,16 @@
                 "logicalId": "GetProjectByIdFunction"
             },
             "lambda": {
-                "payload": {},
-                "environmentVariables": {}
+                "payload": {
+                    "json": {
+                        "id": 1
+                    }
+                },
+                "environmentVariables": {
+                    "HOST": "MYDB.us-east-1.rds.amazonaws.com",
+                    "LOGIN": "user",
+                    "DB_NAME": "password"
+                }
             }
         }
     ]

@@ -135,6 +135,16 @@ Resources:
     Properties:
       RouteTableId: !Ref PrivateRouteTable
       SubnetId: !Ref PrivateSubnet01
+  VpnSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName:
+        !Join
+        - ""
+        - - !Ref RootStackName
+          - '-vpn-sg'
+      GroupDescription: "Security group for AWS Client VPN"
+      VpcId: !Ref VPC
   LambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -145,6 +155,11 @@ Resources:
           - '-lambda-sg'
       GroupDescription: "Security group for Lambda Functions"
       VpcId: !Ref VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        SourceSecurityGroupId: !Ref VpnSecurityGroup
   DBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -160,6 +175,10 @@ Resources:
         FromPort: 3306
         ToPort: 3306
         SourceSecurityGroupId: !Ref LambdaSecurityGroup
+      - IpProtocol: tcp
+        FromPort: 3306
+        ToPort: 3306
+        SourceSecurityGroupId: !Ref VpnSecurityGroup
 
 Outputs:
   VPC:
@@ -180,6 +199,9 @@ Outputs:
   PrivateSubnet01:
     Description: A reference to the private subnet in the 1st Availability Zone
     Value: !Ref PrivateSubnet01
+  VpnSecurityGroup:
+    Description: "Security group for AWS VPN Client"
+    Value: !Ref VpnSecurityGroup
   LambdaSecurityGroup:
     Description: "Security group for Lambda Functions"
     Value: !Ref LambdaSecurityGroup

@@ -1,0 +1,18 @@
+{
+    "CN": "Certificate Authority",
+    "hosts": [
+    ],
+    "key": {
+        "algo": "rsa",
+        "size": 4096
+    },
+    "names": [
+        {
+            "C": "RU",
+            "ST": "Moscow",
+            "L": "Moscow",
+            "O": "Company",
+            "OU": "Department"
+        }
+    ]
+}

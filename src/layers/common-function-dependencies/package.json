@@ -1,0 +1,8 @@
+{
+    "name": "common-function-dependencies",
+    "version": "1.0.0",
+    "dependencies": {
+        "@aws-sdk/client-ssm": "^3.47.1",
+        "mysql2": "^2.3.3"
+    }
+}

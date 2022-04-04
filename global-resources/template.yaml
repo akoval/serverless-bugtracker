@@ -40,6 +40,18 @@ Resources:
       Location: vpc.yaml
       Parameters:
         RootStackName: !Ref AWS::StackName
+#  VPN:
+#    Type: AWS::Serverless::Application
+#    Properties:
+#      Location: vpn/vpn.yaml
+#      Parameters:
+#        RootStackName: !Ref AWS::StackName
+#        VPC: !GetAtt VPC.Outputs.VPC
+#        VpcCIDR: !Ref VpcCIDR
+#        PrivateSubnet00: !GetAtt VPC.Outputs.PrivateSubnet00
+#        VpnSecurityGroup: !GetAtt VPC.Outputs.VpnSecurityGroup
+#    DependsOn:
+#      - VPC
   RDS:
     Type: AWS::Serverless::Application
     Properties:
@@ -52,7 +64,7 @@ Resources:
         PrivateSubnet01: !GetAtt VPC.Outputs.PrivateSubnet01
         DBSecurityGroup: !GetAtt VPC.Outputs.DBSecurityGroup
     DependsOn:
-      - VPC 
+      - VPC
 
 Outputs:
   LambdaSubnet:
@@ -61,9 +73,19 @@ Outputs:
       !GetAtt [VPC, Outputs.PrivateSubnet00]
     Export:
       Name: !Sub '${AWS::StackName}-LambdaSubnet'
+  VpnSecurityGroup:
+    Description: "Export the ID of created SecurityGroup for Vpn Stack"
+    Value:
+      !GetAtt [VPC, Outputs.VpnSecurityGroup]
   LambdaSecurityGroup:
     Description: "Export the ID of created SecurityGroup for Lambda Stack"
     Value:
       !GetAtt [VPC, Outputs.LambdaSecurityGroup]
     Export:
       Name: !Sub '${AWS::StackName}-LambdaSecurityGroup'
+
+  DBHost:
+    Description: database host
+    Value: !GetAtt RDS.Outputs.DBHost
+    Export:
+      Name: !Sub '${AWS::StackName}-DBHost'
