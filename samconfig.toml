@@ -8,3 +8,25 @@ s3_prefix = "serverless-bugtracker-ch1"
 region = "us-east-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
+
+[chapter2]
+[chapter2.deploy]
+[chapter2.deploy.parameters]
+stack_name = "serverless-bugtracker-ch2"
+s3_bucket = "serverless-bugtracker-sam"
+s3_prefix = "serverless-bugtracker-ch2"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "GlobalResourceStack=\"serverless-bugtracker-global-resources\" DbLogin=\"/global/serverless-bugtracker/db-login\" DbName=\"/dev/serverless-bugtracker/db-name\""
+
+[chapter3]
+[chapter3.deploy]
+[chapter3.deploy.parameters]
+stack_name = "serverless-bugtracker-ch3"
+s3_bucket = "serverless-bugtracker-sam"
+s3_prefix = "serverless-bugtracker-ch3"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "GlobalResourceStack=\"serverless-bugtracker-global-resources\" DbLogin=\"/global/serverless-bugtracker/db-login\" DbName=\"/dev/serverless-bugtracker/db-name\""
