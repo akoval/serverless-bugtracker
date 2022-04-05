@@ -19,7 +19,7 @@
                 "environmentVariables": {
                     "HOST": "MYDB.us-east-1.rds.amazonaws.com",
                     "LOGIN": "user",
-                    "DB_NAME": "password"
+                    "DB_NAME": "bugtracker"
                 }
             }
         },
@@ -42,7 +42,7 @@
                 "environmentVariables": {
                     "HOST": "MYDB.us-east-1.rds.amazonaws.com",
                     "LOGIN": "user",
-                    "DB_NAME": "password"
+                    "DB_NAME": "bugtracker"
                 }
             }
         },
@@ -81,7 +81,7 @@
                 "environmentVariables": {
                     "HOST": "MYDB.us-east-1.rds.amazonaws.com",
                     "LOGIN": "user",
-                    "DB_NAME": "password"
+                    "DB_NAME": "bugtracker"
                 }
             }
         }
