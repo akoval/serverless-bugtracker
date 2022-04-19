@@ -30,3 +30,14 @@ region = "us-east-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
 parameter_overrides = "GlobalResourceStack=\"serverless-bugtracker-global-resources\" DbLogin=\"/global/serverless-bugtracker/db-login\" DbName=\"/dev/serverless-bugtracker/db-name\""
+
+[chapter4]
+[chapter4.deploy]
+[chapter4.deploy.parameters]
+stack_name = "serverless-bugtracker-ch4"
+s3_bucket = "serverless-bugtracker-sam"
+s3_prefix = "serverless-bugtracker-ch4"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "GlobalResourceStack=\"serverless-bugtracker-global-resources\" DbLogin=\"/global/serverless-bugtracker/db-login\" Env=\"dev\""

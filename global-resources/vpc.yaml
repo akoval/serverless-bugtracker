@@ -179,6 +179,40 @@ Resources:
         FromPort: 3306
         ToPort: 3306
         SourceSecurityGroupId: !Ref VpnSecurityGroup
+  ApiGwSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName:
+        !Join
+        - ""
+        - - !Ref RootStackName
+          - '-apigw-sg'
+      GroupDescription: "Security group for API Gateway DB"
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        SourceSecurityGroupId: !Ref VpnSecurityGroup
+  ApiGwVpcEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action: '*'
+            Resource: '*'
+      SubnetIds:
+        - !Ref PrivateSubnet00
+        - !Ref PrivateSubnet01
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - !Ref ApiGwSecurityGroup
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.execute-api'
+      VpcId: !Ref VPC
 
 Outputs:
   VPC:
@@ -208,3 +242,6 @@ Outputs:
   DBSecurityGroup:
     Description: "Security group for RDS DB"
     Value: !Ref DBSecurityGroup
+  ApiGwVPCEndpoint:
+    Description: "VPC Endpoint for API Gateway"
+    Value: !Ref ApiGwVpcEndpoint

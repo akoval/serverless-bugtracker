@@ -7,7 +7,7 @@ var dbConnection;
 exports.lambdaHandler = async (event, context) => {
     try {
         if (!dbConnection) {
-            const dbPassword = await fetchParamsPromise;
+            dbPassword = await fetchParamsPromise;
             dbConnection = await createConnection({
                 database: process.env.DB_NAME,
                 host: process.env.HOST,
@@ -20,7 +20,7 @@ exports.lambdaHandler = async (event, context) => {
         var response = {
             statusCode: 400,
             body: JSON.stringify({
-                msg: "Cannot update project." 
+                msg: "Cannot update project."
             })
         };
         if (result.affectedRows == 1) {

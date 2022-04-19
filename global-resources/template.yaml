@@ -83,9 +83,13 @@ Outputs:
       !GetAtt [VPC, Outputs.LambdaSecurityGroup]
     Export:
       Name: !Sub '${AWS::StackName}-LambdaSecurityGroup'
-
   DBHost:
     Description: database host
     Value: !GetAtt RDS.Outputs.DBHost
     Export:
       Name: !Sub '${AWS::StackName}-DBHost'
+  VPCeApiGW:
+    Description: VPC Endpoint for API GW
+    Value: !GetAtt VPC.Outputs.ApiGwVPCEndpoint
+    Export:
+      Name: !Sub '${AWS::StackName}-VPCeApiGW'

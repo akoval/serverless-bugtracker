@@ -56,11 +56,14 @@
                 "logicalId": "GetProjectByIdFunction"
             },
             "api": {
-                "path": "/hello",
+                "path": "/projects/1",
                 "httpMethod": "get",
                 "payload": {
                     "json": {}
                 }
+            },
+            "sam": {
+                "localArguments": ["--env-vars","D:\\serverless-bugtracker\\env.json"]
             }
         },
         {

@@ -33,7 +33,7 @@ exports.lambdaHandler = async (event, context) => {
         }
         return response;
     } catch (err) {
-        console.log("Cannot add person to project", err);
+        console.log("Cannot add persin to project", err);
         var errorResponse = {
             msg: err.message
         }

@@ -20,11 +20,11 @@ exports.lambdaHandler = async (event, context) => {
 
         const [result] = await dbConnection.execute("DELETE FROM `project_team_members` WHERE project_id=? AND team_member_id=?",
         [event['project_id'], event['team_member_id']]);
-        
+
         var response = {
             statusCode: 400,
             body: JSON.stringify({
-                msg: "Cannot remove member" 
+                msg: "Cannot remove member"
             })
         };
         if (result.affectedRows == 1) {
