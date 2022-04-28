@@ -1,9 +1,10 @@
 const { SSMClient, GetParameterCommand } = require("@aws-sdk/client-ssm");
+const log = require('lambda-log');
 const util = require("util");
 const client = new SSMClient({ region: "us-east-1" });
 
 exports.getParameterFromSsm = async (parameter) => {
-    console.log(util.format("Fetching %s from SSM...", parameter));
+    log.info(util.format("Fetching %s from SSM...", parameter));
     try {
         const input = {
             Name: parameter,
@@ -16,7 +17,7 @@ exports.getParameterFromSsm = async (parameter) => {
         }
         return result.Parameter;
     } catch (error) {
-        console.log("Cannot fetch parameter", error);
+        log.error("Cannot fetch parameter", error);
         throw error;
     }
 }

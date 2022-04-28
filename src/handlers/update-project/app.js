@@ -1,5 +1,6 @@
 const { createConnection } = require('mysql2/promise');
 const { getParameterFromSsm } = require('/opt/nodejs/ssm_utils');
+const log = require('lambda-log');
 
 const fetchParamsPromise = getParameterFromSsm("/global/serverless-bugtracker/db-password");
 var dbPassword;
@@ -29,7 +30,7 @@ exports.lambdaHandler = async (event, context) => {
         }
         return response;
     } catch (err) {
-        console.log("Cannot update project", err);
+        log.error("Cannot update project", err);
         var errorResponse = {
             msg: err.message
         }

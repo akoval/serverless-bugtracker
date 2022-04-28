@@ -1,14 +1,23 @@
-const { createConnection } = require('mysql2/promise');
 const { getParameterFromSsm } = require('/opt/nodejs/ssm_utils');
+const log = require('lambda-log');
 const { Octokit } = require("@octokit/rest");
+const AWSXRay = require('aws-xray-sdk-core');
+AWSXRay.captureHTTPsGlobal(require('https'));
 const https = require('https');
+
+const captureMySQL = require('aws-xray-sdk-mysql');
+const mysql = captureMySQL(require('mysql2/promise'));
+
+if (process.env.AWS_SAM_LOCAL) {
+    AWSXRay.setContextMissingStrategy("IGNORE_ERROR");
+}
 
 const dbPasswordPromise = getParameterFromSsm("/global/serverless-bugtracker/db-password");
 const githubTokenPromise = getParameterFromSsm("/global/serverless-bugtracker/github-token");
 const githubPromise = githubTokenPromise.then(token => {
     return new Octokit({
         auth: token,
-        request:  {
+        request: {
             agent: new https.Agent({ keepAlive: true })
         }
     });
@@ -22,7 +31,7 @@ exports.lambdaHandler = async (event, context) => {
     try {
         if(!dbConnection) {
             dbPassword = await dbPasswordPromise;
-            dbConnection = await createConnection({
+            dbConnection = await mysql.createConnection({
                 database: process.env.DB_NAME,
                 host: process.env.HOST,
                 user: process.env.LOGIN,
@@ -42,16 +51,19 @@ exports.lambdaHandler = async (event, context) => {
         const project = rows[0];
         const owner = project['github_owner'];
 
-        const { data: prInfo} = await listPullRequests(owner, project['github_repo']);
+        const xraySegement = AWSXRay.getSegment();
+        var subsegment = xraySegement.addNewSubsegment('get-pull-requests');
 
+        const { data: prInfo } = await listPullRequests(owner, project['github_repo']);
         project.openPullRequests = fillPullRequestsResponseInfo(prInfo);
-
+        
+        subsegment.close();
         return {
             statusCode: 200,
             body: JSON.stringify(project)
         };
     } catch (err) {
-        console.log("Cannot retrieve project by id.", err);
+        log.error("Cannot retrieve project by id", err);
         var errorResponse = {
             msg: err.message
         }
@@ -80,5 +92,6 @@ function fillPullRequestsResponseInfo(pullRequests) {
             user: pr.user.login,
             body: pr.body
         });
-    })
+    });
+    return response;
 }
