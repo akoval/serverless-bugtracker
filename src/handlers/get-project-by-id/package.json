@@ -2,6 +2,6 @@
   "name": "get-project-by-id",
   "version": "1.0.0",
   "dependencies": {
-    "@octokit/rest": "^18.12.0"
+    "@octokit/rest": "18.12.0"
   }
 }
