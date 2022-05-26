@@ -1,0 +1,194 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  serverless-bugtracker
+
+  My bug tracker. Uses Amazon Serverless Stack
+  
+Globals:
+  Function:
+    Timeout: 5
+    VpcConfig:
+      SecurityGroupIds:
+        - !ImportValue
+          'Fn::Sub': '${GlobalResourceStack}-LambdaSecurityGroup'
+      SubnetIds:
+        - !ImportValue
+          'Fn::Sub': '${GlobalResourceStack}-LambdaSubnet'
+    MemorySize: !FindInMap [LambdaSizes, !Ref Env, memorySize]
+    Environment:
+      Variables:
+        LOGIN: !Ref DbLogin
+        DB_NAME: !Sub '{{resolve:ssm:/${Env}/serverless-bugtracker/db-name}}'
+        HOST: !ImportValue
+          'Fn::Sub': '${GlobalResourceStack}-DBHost'
+     ReservedConcurrentExecutions: 10
+     ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 2
+
+    Layers:
+      - !Ref CommonFunctionDependencies
+
+Parameters:
+  Env:
+    Description: Environment name
+    Type: String
+    Default: dev
+  GlobalResourceStack:
+    Description: Name of the global resources stack
+    Type: String
+    Default: serverless-bugtracker-global-resources
+  DbLogin:
+    Description: Login stored in SSM
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /global/serverless-bugtracker/db-login
+
+Mappings:
+  LambdaSizes:
+    dev:
+      "memorySize": "128"
+    qa:
+      "memorySize": "128"
+    stg:
+      "memorySize": "512"
+
+Resources:
+  BugTrackerApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      OpenApiVersion: "3.0.3"
+      TracingEnabled: true
+      MethodSettings:
+        - LoggingLevel: INFO
+          ResourcePath: '/*' # allows for logging on any resource
+          HttpMethod: '*' # allows for logging on any method
+      AccessLogSetting:
+        DestinationArn: !GetAtt AccessLogGroup.Arn
+        Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
+      EndpointConfiguration:
+        Type: PRIVATE
+        VPCEndpointIds:
+          - !ImportValue
+            'Fn::Sub': '${GlobalResourceStack}-VPCeApiGW'
+      Auth:
+        ResourcePolicy:
+          IntrinsicVpceWhitelist:
+            - !ImportValue
+              'Fn::Sub': '${GlobalResourceStack}-VPCeApiGW'
+
+  AccessLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 14
+
+  GetProjectByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/get-project-by-id
+      Handler: app.lambdaHandler
+      Runtime: nodejs14.x
+      Tracing: Active
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /projects/{projectId}
+            Method: get
+            RestApiId: !Ref BugTrackerApi
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - ssm:GetParameter
+              Resource:
+                - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/global/serverless-bugtracker/db-password'
+                - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/global/serverless-bugtracker/github-token'
+  AddTeamMemberFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/add-person
+      Handler: app.lambdaHandler
+      Runtime: nodejs14.x
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            Path: /projects/{projectId}/members/{memberId}
+            Method: put
+            RestApiId: !Ref BugTrackerApi
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - ssm:GetParameter
+              Resource:
+                - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/global/serverless-bugtracker/db-password'
+
+  RemoveTeamMemberFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/remove-person
+      Handler: app.lambdaHandler
+      Runtime: nodejs14.x
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            Path: /projects/{projectId}/members/{memberId}
+            Method: delete
+            RestApiId: !Ref BugTrackerApi
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - ssm:GetParameter
+              Resource:
+                - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/global/serverless-bugtracker/db-password'
+
+  UpdateProjectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/update-project
+      Handler: app.lambdaHandler
+      Runtime: nodejs14.x
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            Path: /projects/{projectId}
+            Method: put
+            RestApiId: !Ref BugTrackerApi
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - ssm:GetParameter
+              Resource:
+                - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/global/serverless-bugtracker/db-password'
+
+  CommonFunctionDependencies:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: common-function-dependencies
+      Description: Common dependencies for all functions.
+      ContentUri: ./src/layers/common-function-dependencies
+      CompatibleRuntimes:
+        - nodejs14.x
+      RetentionPolicy: Delete
+    Metadata:
+      BuildMethod: nodejs14.x
+Outputs:
+  GetProjectByIdFunctionApi:
+    Description: "API Gateway endpoint URL for Prod stage for GetProjectByIdFunction"
+    Value: !Sub "https://${BugTrackerApi}.execute-api.${AWS::Region}.amazonaws.com/dev/hello/"
+  GetProjectByIdFunction:
+    Description: "GetProjectByIdFunction Lambda Function ARN"
+    Value: !GetAtt GetProjectByIdFunction.Arn
+  GetProjectByIdFunctionIamRole:
+    Description: "Implicit IAM Role created for GetProjectByIdFunction function"
+    Value: !GetAtt GetProjectByIdFunctionRole.Arn

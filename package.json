@@ -1,0 +1,15 @@
+{
+  "jest": {
+    "moduleNameMapper": {
+      "/opt/nodejs/(.*)": "$1"
+    },
+    "modulePaths": ["./src/layers/common-function-dependencies",
+      "./src/layers/common-function-dependencies/node_modules"]
+  },
+  "devDependencies": {
+    "jest": "^27.4.7"
+  },
+  "scripts": {
+    "test": "jest"
+  }
+}

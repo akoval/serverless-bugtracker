@@ -1,0 +1,19 @@
+{
+    "CN": "vpn-client",
+    "hosts": [
+	"aws-vpn-client"
+    ],
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "names": [
+        {
+            "C": "RU",
+            "ST": "Moscow",
+            "L": "Moscow",
+            "O": "Company",
+            "OU": "Department"
+        }
+    ]
+}

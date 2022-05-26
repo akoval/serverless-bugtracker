@@ -1,0 +1,60 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Template for provisioning VPN related Client VPN endpoints and some stuff around it.
+
+Parameters:
+  RootStackName:
+    Type: String
+    Description: The shared value will be passed to this parameter by parent stack.
+  VPC:
+    Type: String
+    Description: The shared value will be passed to this parameter by parent stack.
+  VpcCIDR:
+    Type: String
+    Description: The shared value will be passed to this parameter by parent stack.
+  PrivateSubnet00:
+    Type: String
+    Description: The shared value will be passed to this parameter by parent stack.
+  VpnSecurityGroup:
+    Type: String
+    Description: The shared value will be passed to this parameter by parent stack.
+
+Resources:
+  ClientVpnEndpoint:
+    Type: AWS::EC2::ClientVpnEndpoint
+    Properties:
+      AuthenticationOptions:
+        - Type: "certificate-authentication"
+          MutualAuthentication:
+            ClientRootCertificateChainArn: '{{resolve:ssm:/global/serverless-bugtracker/vpn-cert-arn}}'
+      ConnectionLogOptions:
+        Enabled: false
+      ClientCidrBlock: "172.74.0.0/16"
+      SplitTunnel: true
+      DnsServers:
+        - !Join
+          - "."
+          - - !Select [0, !Split [ ".", !Ref VpcCIDR ]]
+            - !Select [1, !Split [ ".", !Ref VpcCIDR ]]
+            - !Select [2, !Split [ ".", !Ref VpcCIDR ]]
+            - "2"
+        - "1.1.1.1"
+      VpcId: !Ref VPC
+      SecurityGroupIds:
+        - !Ref VpnSecurityGroup
+      ServerCertificateArn: '{{resolve:ssm:/global/serverless-bugtracker/vpn-cert-arn}}'
+      TagSpecifications:
+        - ResourceType: "client-vpn-endpoint"
+          Tags:
+            - Key: Name
+              Value: !Sub ${RootStackName}-vpn
+  ClientVPNTargetNetworkAssociationPrivateSubnet00:
+    Type: AWS::EC2::ClientVpnTargetNetworkAssociation
+    Properties:
+      ClientVpnEndpointId: !Ref ClientVpnEndpoint
+      SubnetId: !Ref PrivateSubnet00
+  ClientVPNAuthorizationRule:
+    Type: "AWS::EC2::ClientVpnAuthorizationRule"
+    Properties:
+      AuthorizeAllGroups: true
+      ClientVpnEndpointId: !Ref ClientVpnEndpoint
+      TargetNetworkCidr: !Ref VpcCIDR
